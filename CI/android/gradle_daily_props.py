@@ -1,6 +1,6 @@
 dic = {
     "applicationIdSuffix": ".daily",
-    "applicationLabel": "VCMI daily",
+    "applicationLabel": "Heroes 3",
     "applicationVariant": "daily",
     "signingConfig": "dailySigning",
 }

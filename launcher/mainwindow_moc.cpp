@@ -12,6 +12,7 @@
 #include "ui_mainwindow_moc.h"
 
 #include <QDir>
+#include <QTimer>
 
 #include "../lib/CConfigHandler.h"
 #include "../lib/CConsoleHandler.h"
@@ -120,7 +121,13 @@ MainWindow::MainWindow(QWidget * parent)
 	bool h3DataFound = CResourceHandler::get()->existsResource(ResourcePath("DATA/GENRLTXT.TXT"));
 
 	if (h3DataFound && setupCompleted)
+	{
 		ui->tabListWidget->setCurrentIndex(TabRows::START);
+#ifdef VCMI_ANDROID
+		// autostart patch: skip the launcher and go straight into the game
+		QTimer::singleShot(300, this, [](){ startGame({}); });
+#endif
+	}
 	else
 		enterSetup();
 
