@@ -402,6 +402,7 @@ public:
 	bfs::path userDataPath() const override;
 	bfs::path userCachePath() const override;
 	bfs::path userConfigPath() const override;
+	bfs::path userSavePath() const override;
 
 	std::vector<bfs::path> dataPaths() const override;
 
@@ -414,6 +415,29 @@ bfs::path VCMIDirsAndroid::libraryPath() const { return nativePath; }
 bfs::path VCMIDirsAndroid::userDataPath() const { return basePath; }
 bfs::path VCMIDirsAndroid::userCachePath() const { return userDataPath() / "cache"; }
 bfs::path VCMIDirsAndroid::userConfigPath() const { return userDataPath() / "config"; }
+
+// Cloud-save patch: keep saves in shared storage (Documents/VCMI/Saves) so sync apps
+// (Autosync for Google Drive, Syncthing, ...) can reach them. Requires "All files access".
+// Falls back to the app-private folder if the shared one is not writable.
+bfs::path VCMIDirsAndroid::userSavePath() const
+{
+	static const bfs::path result = [this]() -> bfs::path
+	{
+		const bfs::path shared = "/storage/emulated/0/Documents/VCMI/Saves";
+		boost::system::error_code ec;
+		bfs::create_directories(shared, ec);
+		const bfs::path probe = shared / ".vcmi_write_test";
+		FILE * f = fopen(probe.string().c_str(), "wb");
+		if(f)
+		{
+			fclose(f);
+			bfs::remove(probe, ec);
+			return shared;
+		}
+		return userDataPath() / "Saves";
+	}();
+	return result;
+}
 
 bfs::path VCMIDirsAndroid::fullLibraryPath(const std::string & desiredFolder, const std::string & baseLibName) const
 {
