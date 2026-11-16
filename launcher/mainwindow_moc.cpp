@@ -125,7 +125,11 @@ MainWindow::MainWindow(QWidget * parent)
 		ui->tabListWidget->setCurrentIndex(TabRows::START);
 #ifdef VCMI_ANDROID
 		// autostart patch: skip the launcher and go straight into the game
-		QTimer::singleShot(300, this, [](){ startGame({}); });
+		// hide the launcher UI so it does not flash before the game appears
+		centralWidget()->hide();
+		setStyleSheet("QMainWindow { background: black; }");
+		QTimer::singleShot(0, this, [](){ startGame({}); });
+		QTimer::singleShot(4000, this, [this](){ setStyleSheet(QString()); centralWidget()->show(); });
 #endif
 	}
 	else
